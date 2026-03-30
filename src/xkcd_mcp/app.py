@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from xkcd_mcp.config import load_settings
 from xkcd_mcp.server import mcp
@@ -23,7 +23,7 @@ def build_app() -> FastAPI:
     settings = load_settings()
     app = FastAPI(
         title="xkcd-mcp",
-        version="0.1.0",
+        version="0.2.0",
         lifespan=mcp_http.lifespan,
     )
 
@@ -40,7 +40,7 @@ def build_app() -> FastAPI:
     async def root() -> dict[str, Any]:
         return {
             "service": "xkcd-mcp",
-            "version": "0.1.0",
+            "version": "0.2.0",
             "docs": f"http://{settings.host}:{settings.port}/docs",
             "mcp_http": f"http://{settings.host}:{settings.port}{settings.mcp_http_path}",
             "webapp": "http://127.0.0.1:10779",

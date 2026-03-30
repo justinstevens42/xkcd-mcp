@@ -1,5 +1,27 @@
 # xkcd-mcp
 
-- Source: https://github.com/sandraschi/xkcd-mcp
-- Tool: xkcd_comic(operation: current|by_number|random, comic_number optional).
-- HTTP: GET /health, POST /api/comic; MCP /mcp on port 10778; SPA 10779.
+> FastMCP 3.1 server: xkcd comic metadata via **xkcd.com** official `info.0.json` only (no HTML scraping). Dual transport: **stdio** default, **HTTP** with MCP at `/mcp`. Optional Vite dashboard on **10779** proxied to the API on **10778**.
+
+**Full detail:** see [`llms-full.txt`](llms-full.txt).
+
+## Quick links
+
+- [README](README.md) — install, run, tool table
+- [CHANGELOG](CHANGELOG.md)
+- [glama.json](glama.json) — Glama discovery
+
+## Tools (Discrete Surface v0.2.0)
+
+- **`xkcd_latest`** — Fetch current comic.
+- **`xkcd_get`** — Fetch specific comic index.
+- **`xkcd_random`** — Surprise random comic.
+- **`xkcd_help`** — Rich help card & port info.
+
+## Ports (fleet range 10700–10800)
+
+| Role | Port |
+|------|------|
+| FastAPI + MCP HTTP | **10778** |
+| Vite dev (SPA) | **10779** |
+
+Adjacency: backend/frontend paired per fleet **WEBAPP_STANDARDS** (see local `mcp-central-docs` clone if present).

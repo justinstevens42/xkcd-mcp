@@ -1,0 +1,68 @@
+{
+  "examples": [
+    {
+      "title": "Fetch Current Comic",
+      "description": "Fetching the most recent xkcd comic (today's update).",
+      "user_input": "What's the latest xkcd comic?",
+      "tool_call": "xkcd_latest",
+      "parameters": {},
+      "expected_output": "ToolResult with rich rendering of the latest xkcd comic index."
+    },
+    {
+      "title": "Get xkcd 1234",
+      "description": "Fetching a specific xkcd comic by index.",
+      "user_input": "Show me xkcd 1234",
+      "tool_call": "xkcd_get",
+      "parameters": {
+        "comic_number": 1234
+      },
+      "expected_output": "ToolResult with rich rendering of comic #1234."
+    },
+    {
+      "title": "Random Comic Discovery",
+      "description": "Fetching a random surprise xkcd comic from the archive.",
+      "user_input": "Surprise me with an xkcd comic!",
+      "tool_call": "xkcd_random",
+      "parameters": {},
+      "expected_output": "ToolResult with a randomly selected comic index."
+    },
+    {
+      "title": "Help and Port Discovery",
+      "description": "Finding tool information and active ports.",
+      "user_input": "How do I use the xkcd tools?",
+      "tool_call": "xkcd_help",
+      "parameters": {},
+      "expected_output": "ToolResult with help text and a rich help card (Ports 10778/10779)."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Enable Prefab UI",
+      "description": "Explicitly enable rich rendering in the environment.",
+      "user_input": "Enable rich cards for xkcd comics",
+      "config_key": "XKCD_PREFAB_APPS",
+      "config_value": "1"
+    },
+    {
+      "title": "Disable Prefab UI",
+      "description": "Switch to plain markdown for low-bandwidth mode.",
+      "user_input": "Disable rich xkcd cards",
+      "config_key": "XKCD_PREFAB_APPS",
+      "config_value": "0"
+    }
+  ],
+  "error_handling_examples": [
+    {
+      "title": "Comic Index Out of Range",
+      "error": "Comic index #99999 not found (404).",
+      "recovery": "Suggest checking the current latest comic index.",
+      "user_action": "Verify the correct comic number on xkcd.com."
+    },
+    {
+      "title": "Network Error",
+      "error": "Connection to xkcd.com timed out.",
+      "recovery": "Retrying with a longer timeout or recommending a manual check.",
+      "user_action": "Ensure the host machine has internet access to xkcd.com."
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
   "name": "xkcd-mcp",
-  "version": "0.1.0",
-  "description": "xkcd comics via official JSON API (current / by_number / random); FastMCP 3.1; no scraping."
+  "version": "0.2.0",
+  "description": "xkcd comics via official JSON API: xkcd_latest, xkcd_get, xkcd_random, xkcd_help; FastMCP 3.1 Prefab UI in all tools; no scraping."
 }

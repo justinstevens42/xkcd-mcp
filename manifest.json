@@ -1,0 +1,40 @@
+{
+  "manifest_version": "0.2",
+  "name": "xkcd-mcp",
+  "version": "0.2.0",
+  "description": "FastMCP 3.1 xkcd server — official JSON API only; Prefab UI rich in-chat comics.",
+  "author": {
+    "name": "Sandra Schieder"
+  },
+  "server": {
+    "type": "python",
+    "entry_point": "src/xkcd_mcp/__main__.py",
+    "mcp_config": {
+      "command": "python",
+      "args": ["-m", "xkcd_mcp"],
+      "env": {
+        "PYTHONPATH": "${PWD}",
+        "PYTHONUNBUFFERED": "1",
+        "XKCD_PREFAB_APPS": "1"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "xkcd_latest",
+      "description": "Fetch the most recent xkcd comic with rich Prefab UI rendering."
+    },
+    {
+      "name": "xkcd_get",
+      "description": "Fetch a specific xkcd comic by its index number."
+    },
+    {
+      "name": "xkcd_random",
+      "description": "Fetch a random xkcd comic from the archive."
+    },
+    {
+      "name": "xkcd_help",
+      "description": "Interactive usage guide and system configuration help card."
+    }
+  ]
+}

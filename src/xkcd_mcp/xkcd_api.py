@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import random
 from typing import Any
 
@@ -66,3 +67,32 @@ async def fetch_random() -> dict[str, Any]:
         return {"success": False, "error": "Could not determine latest comic number."}
     pick = random.randint(1, n)
     return await fetch_by_number(pick)
+
+
+async def fetch_image_data_uri(url: str) -> str | None:
+    """Fetch image from URL and return as base64 data URI (capped at 512KB)."""
+    try:
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(20.0),
+            headers={"User-Agent": _UA},
+        ) as client:
+            # Use stream=True and a byte limit to prevent huge payloads
+            async with client.stream("GET", url) as response:
+                response.raise_for_status()
+                content_type = response.headers.get("content-type", "image/png")
+                chunks = []
+                bytes_received = 0
+                max_bytes = 512 * 1024  # 512 KB SOTA cap
+                
+                async for chunk in response.aiter_bytes():
+                    bytes_received += len(chunk)
+                    if bytes_received > max_bytes:
+                        # Too big; abort
+                        return None
+                    chunks.append(chunk)
+                
+                image_data = b"".join(chunks)
+                b64_data = base64.b64encode(image_data).decode("utf-8")
+                return f"data:{content_type};base64,{b64_data}"
+    except Exception:
+        return None
