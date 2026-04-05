@@ -123,7 +123,7 @@ async def xkcd_random() -> ToolResult:
         return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_help() -> ToolResult:
     """Get help and usage information for xkcd-mcp tools and configuration."""
     help_text = (

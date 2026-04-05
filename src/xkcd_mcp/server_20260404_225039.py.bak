@@ -39,7 +39,7 @@ async def xkcd_latest() -> ToolResult:
         return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_get(comic_number: int) -> ToolResult:
     """Fetch a specific xkcd comic by its number."""
     try:
@@ -51,7 +51,7 @@ async def xkcd_get(comic_number: int) -> ToolResult:
         return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_search(query: str) -> ToolResult:
     """
     Search for xkcd comics by topic (e.g., 'aliens', 'global warming').
@@ -111,7 +111,7 @@ async def xkcd_search(query: str) -> ToolResult:
         return ToolResult(content=f"Search failed: {str(e)}", is_error=True)
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_random() -> ToolResult:
     """Fetch a random comic from the entire xkcd collection."""
     try:
@@ -123,7 +123,7 @@ async def xkcd_random() -> ToolResult:
         return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_help() -> ToolResult:
     """Get help and usage information for xkcd-mcp tools and configuration."""
     help_text = (

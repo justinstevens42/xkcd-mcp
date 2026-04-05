@@ -1,4 +1,4 @@
-"""FastMCP 3.2 — xkcd tools."""
+"""FastMCP 3.1 — xkcd tools."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ mcp = FastMCP(
 )
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_latest() -> ToolResult:
     """Fetch the latest comic from xkcd.com."""
     try:
@@ -39,7 +39,7 @@ async def xkcd_latest() -> ToolResult:
         return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_get(comic_number: int) -> ToolResult:
     """Fetch a specific xkcd comic by its number."""
     try:
@@ -51,7 +51,7 @@ async def xkcd_get(comic_number: int) -> ToolResult:
         return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_search(query: str) -> ToolResult:
     """
     Search for xkcd comics by topic (e.g., 'aliens', 'global warming').
@@ -89,15 +89,18 @@ async def xkcd_search(query: str) -> ToolResult:
             with Text(css_class="flex flex-col gap-6") as view:
                 Text(f"Search Results for: **{query}**", css_class="text-xl font-bold mb-4")
                 for c in comics:
+                    # Reuse formatting logic or inline for search
+                    img_uri = await xkcd_api.fetch_image_data_uri(c["img"])
                     with Card(css_class="border-none shadow-none bg-secondary/10 p-4 rounded-xl"):
                         with CardHeader():
                             CardTitle(f"#{c['num']}: {c['title']}")
                         with CardContent():
-                            Image(
-                                src=c["img"],
-                                alt=c["alt"],
-                                css_class="rounded-lg mb-2 max-h-64 object-contain",
-                            )
+                            if img_uri:
+                                Image(
+                                    src=img_uri,
+                                    alt=c["alt"],
+                                    css_class="rounded-lg mb-2 max-h-64 object-contain",
+                                )
                             Text(c["alt"], css_class="text-sm italic opacity-80 mb-2")
                             Text(
                                 f"[View on xkcd]({c['xkcd_url']}) | [Explanation]({c['explainxkcd_url']})",
@@ -111,7 +114,7 @@ async def xkcd_search(query: str) -> ToolResult:
         return ToolResult(content=f"Search failed: {str(e)}", is_error=True)
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_random() -> ToolResult:
     """Fetch a random comic from the entire xkcd collection."""
     try:
@@ -123,7 +126,7 @@ async def xkcd_random() -> ToolResult:
         return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
 
 
-@mcp.tool()
+@mcp.tool(app=HAS_PREFAB)
 async def xkcd_help() -> ToolResult:
     """Get help and usage information for xkcd-mcp tools and configuration."""
     help_text = (
@@ -186,13 +189,15 @@ async def _format_comic_result(comic: dict) -> ToolResult:
 
     structured_content = None
     if HAS_PREFAB:
-        with Card(css_class="max-w-2xl border-none shadow-none bg-transparent") as view:
-            with CardHeader():
-                CardTitle(label)
-            with CardContent():
-                Image(src=img_url, alt=alt, css_class="rounded-lg shadow-md mb-2")
-                Text(alt, css_class="text-sm italic opacity-80")
+        data_uri = await xkcd_api.fetch_image_data_uri(img_url)
+        if data_uri:
+            with Card(css_class="max-w-2xl border-none shadow-none bg-transparent") as view:
+                with CardHeader():
+                    CardTitle(label)
+                with CardContent():
+                    Image(src=data_uri, alt=alt, css_class="rounded-lg shadow-md mb-2")
+                    Text(alt, css_class="text-sm italic opacity-80")
 
-        structured_content = PrefabApp(view=view, title=label)
+            structured_content = PrefabApp(view=view, title=label)
 
     return ToolResult(content=text_summary, structured_content=structured_content)

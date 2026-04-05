@@ -15,5 +15,10 @@ Set-Location $PSScriptRoot
 if (-not (Test-Path "node_modules")) {
     npm install
 }
-Start-Process "http://127.0.0.1:10779/"
+# 4b. Launch background task to open browser once frontend is ready (Auto-opened by Antigravity)
+$frontendUrl = "http://127.0.0.1:10779/"
+$pollAndOpen = "for (`$i = 0; `$i -lt 60; `$i++) { try { `$null = Invoke-WebRequest -Uri '$frontendUrl' -TimeoutSec 2 -UseBasicParsing -ErrorAction Stop; Start-Process '$frontendUrl'; exit } catch { Start-Sleep -Seconds 1 } }"
+Start-Process powershell -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "-Command", $pollAndOpen
+
+Write-Host "Browser will open automatically when Vite is ready." -ForegroundColor Gray
 npm run dev

@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import base64
 import random
+import re
 from typing import Any
 
 import httpx
 
 _BASE = "https://xkcd.com"
+_EXPLAIN = "https://www.explainxkcd.com/wiki/api.php"
 _UA = "xkcd-mcp/0.1 (+https://github.com/sandraschi/xkcd-mcp)"
 
 
@@ -83,16 +85,56 @@ async def fetch_image_data_uri(url: str) -> str | None:
                 chunks = []
                 bytes_received = 0
                 max_bytes = 512 * 1024  # 512 KB SOTA cap
-                
+
                 async for chunk in response.aiter_bytes():
                     bytes_received += len(chunk)
                     if bytes_received > max_bytes:
                         # Too big; abort
                         return None
                     chunks.append(chunk)
-                
+
                 image_data = b"".join(chunks)
                 b64_data = base64.b64encode(image_data).decode("utf-8")
                 return f"data:{content_type};base64,{b64_data}"
     except Exception:
         return None
+
+
+async def search_explain_xkcd(query: str, limit: int = 5) -> list[int]:
+    """
+    Search explainxkcd.com for a topic and return up to `limit` comic numbers.
+    Uses the MediaWiki API: action=query&list=search.
+    """
+    params = {
+        "action": "query",
+        "list": "search",
+        "srsearch": query,
+        "format": "json",
+        "srlimit": limit,
+        "srwhat": "text",
+    }
+
+    try:
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(20.0),
+            headers={"User-Agent": _UA},
+        ) as client:
+            r = await client.get(_EXPLAIN, params=params)
+            r.raise_for_status()
+            data = r.json()
+
+        search_results = data.get("query", {}).get("search", [])
+        comic_nums = []
+
+        # Regex to find "NUM:" in titles like "1732: Earth Temperature Timeline"
+        num_pattern = re.compile(r"(\d+):")
+
+        for result in search_results:
+            title = result.get("title", "")
+            match = num_pattern.search(title)
+            if match:
+                comic_nums.append(int(match.group(1)))
+
+        return comic_nums
+    except Exception:
+        return []

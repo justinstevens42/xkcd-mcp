@@ -1,14 +1,5 @@
 # Changelog
 
-## [0.3.0] - 2026-04-04
-
-### Changed
-- **FastMCP 3.2**: Bumped dependency to `fastmcp>=3.2`, `prefab-ui>=0.14.0`.
-- **Starlette backend**: Replaced FastAPI + Pydantic with plain Starlette + dicts (fleet STARLETTE_NO_PYDANTIC_STANDARD).
-- **Prefab fix**: Removed base64 image embedding (`fetch_image_data_uri`) — `Image()` now uses direct `https://imgs.xkcd.com/...` URLs. Eliminates "waiting for content" hang in Claude Desktop.
-- **Decorator cleanup**: `@mcp.tool(app=HAS_PREFAB)` → `@mcp.tool()` — 3.2 renders `structured_content` automatically when present; decorator arg not needed.
-- Version bump: `0.2.0` → `0.3.0`.
-
 ## [0.2.0] - 2026-03-30
 
 ### Added
