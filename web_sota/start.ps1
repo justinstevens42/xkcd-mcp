@@ -1,4 +1,14 @@
-# xkcd-mcp — backend 10778 + Vite 10779
+﻿Param([switch]$Headless)
+
+# --- SOTA Headless Standard ---
+if ($Headless -and ($Host.UI.RawUI.WindowTitle -notmatch 'Hidden')) {
+    Start-Process pwsh -ArgumentList '-NoProfile', '-File', $PSCommandPath, '-Headless' -WindowStyle Hidden
+    exit
+}
+$WindowStyle = if ($Headless) { 'Hidden' } else { 'Normal' }
+# ------------------------------
+
+# xkcd-mcp â€” backend 10778 + Vite 10779
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
@@ -22,3 +32,4 @@ Start-Process powershell -ArgumentList "-NoProfile", "-WindowStyle", "Hidden", "
 
 Write-Host "Browser will open automatically when Vite is ready." -ForegroundColor Gray
 npm run dev
+

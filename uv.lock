@@ -1450,14 +1450,12 @@ source = { editable = "." }
 dependencies = [
     { name = "fastmcp" },
     { name = "httpx" },
+    { name = "prefab-ui" },
     { name = "starlette" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.optional-dependencies]
-apps = [
-    { name = "prefab-ui" },
-]
 dev = [
     { name = "pre-commit" },
     { name = "pytest" },
@@ -1470,14 +1468,14 @@ requires-dist = [
     { name = "fastmcp", specifier = ">=3.2" },
     { name = "httpx", specifier = ">=0.27" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=4" },
-    { name = "prefab-ui", marker = "extra == 'apps'", specifier = ">=0.14.0" },
+    { name = "prefab-ui", specifier = ">=0.14.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
     { name = "starlette", specifier = ">=0.46" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
-provides-extras = ["dev", "apps"]
+provides-extras = ["dev"]
 
 [[package]]
 name = "zipp"

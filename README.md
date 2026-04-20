@@ -1,5 +1,7 @@
 # xkcd-mcp
 
+[![FastMCP Version](https://img.shields.io/badge/FastMCP-3.2-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
+
 **MODEL CONTEXT PROTOCOL**  *fine print sold separately*
 
 ---
@@ -58,7 +60,7 @@ Set-Location xkcd-mcp
 # Sync all dependencies (v0.2.0)
 uv sync
 
-# RECOMMENDED: FastMCP 3.1 Prefab UI support (rich in-chat comics)
+# RECOMMENDED: FastMCP 3.2 Prefab UI support (rich in-chat comics)
 uv sync --extra apps
 ```
 
@@ -111,6 +113,17 @@ Or double-click `web_sota\start.bat` (launches the same script).
 
 - **`llms.txt`**  short index; **`llms-full.txt`**  tools, env, ports, troubleshooting.
 
-### License
+#
+## 🛡️ Industrial Quality Stack
+
+This project adheres to **SOTA 14.1** industrial standards for high-fidelity agentic orchestration:
+
+- **Python (Core)**: [Ruff](https://astral.sh/ruff) for linting and formatting. Zero-tolerance for `print` statements in core handlers (`T201`).
+- **Webapp (UI)**: [Biome](https://biomejs.dev/) for sub-millisecond linting. Strict `noConsoleLog` enforcement.
+- **Protocol Compliance**: Hardened `stdout/stderr` isolation to ensure crash-resistant JSON-RPC communication.
+- **Automation**: [Justfile](./justfile) recipes for all fleet operations (`just lint`, `just fix`, `just dev`).
+- **Security**: Automated audits via `bandit` and `safety`.
+
+## License
 
 MIT

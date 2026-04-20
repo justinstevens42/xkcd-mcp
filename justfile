@@ -73,7 +73,7 @@ run serve:
 stdio:
     uv run xkcd-mcp
 
-lint check:
+check:
     uv run ruff check .
     uv run ruff format --check .
 
