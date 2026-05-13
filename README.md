@@ -1,4 +1,4 @@
-# xkcd-mcp (modified to work with Claude Code)
+# xkcd-mcp (modified to work with Claude Code CLI)
 
 [![FastMCP Version](https://img.shields.io/badge/FastMCP-3.2-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
 
@@ -10,13 +10,13 @@
 
 **xkcd-mcp**  Comics for your LLM. **Official** JSON API (`/info.0.json`), **unofficial** amount of stick-figure drama.
 
-You get a small **Vite** dashboard with a comic-panel **hero**: stick people, a speech bubble that says *MCP, explain this*, and a box labeled **JSON** that definitely understands your feelings. The README cant draw SVG, so imagine it badlysame energy as the web app.
+Notice this is modified to work for CLI since Claude Code does not show images (or work with apps) by default. 
 
 > **Alt text (this repo):** A README receives a pull request titled make it whimsical. The CI passes. The narrator questions whether that was ever in scope.
 
 > **Alt text (the app):** A tiny server labeled JSON gets enthusiastic waves while someone negotiates with the universe. Hover tooltips not included; thats what the comic **alt** is for.
 
-No scraping. No Explainxkcd body fetch. Were not here to parse HTML like its 2003.
+No scraping. No Explainxkcd body fetch. We're not here to parse HTML like its 2003.
 
 **Original Repo:** [github.com/sandraschi/xkcd-mcp](https://github.com/sandraschi/xkcd-mcp)
 
