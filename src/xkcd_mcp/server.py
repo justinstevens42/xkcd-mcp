@@ -13,7 +13,15 @@ from xkcd_mcp import xkcd_api
 # Prefab UI imports with graceful fallback
 try:
     from prefab_ui.app import PrefabApp
-    from prefab_ui.components import Card, CardContent, CardHeader, CardTitle, Image, Text
+    from prefab_ui.components import (
+        Card,
+        CardContent,
+        CardHeader,
+        CardTitle,
+        Div,
+        Image,
+        Text,
+    )
 
     HAS_PREFAB = os.environ.get("XKCD_PREFAB_APPS", "1") != "0"
 except ImportError:
@@ -43,10 +51,10 @@ async def xkcd_latest() -> ToolResult:
 
 
 @mcp.tool()
-async def xkcd_get(comic_number: int) -> ToolResult:
+async def xkcd_get(number: int) -> ToolResult:
     """Fetch a specific xkcd comic by its number."""
     try:
-        res = await xkcd_api.fetch_by_number(comic_number)
+        res = await xkcd_api.fetch_by_number(number)
         if not res.get("success"):
             raise ToolError(f"Error: {res.get('error')}")
         return await _format_comic_result(res["comic"])
@@ -88,7 +96,7 @@ async def xkcd_search(query: str) -> ToolResult:
         structured_content = None
         if HAS_PREFAB:
             # We'll use a vertical stack of comic cards
-            with Text(css_class="flex flex-col gap-6") as view:
+            with Div(css_class="flex flex-col gap-6") as view:
                 Text(f"Search Results for: **{query}**", css_class="text-xl font-bold mb-4")
                 for c in comics:
                     with Card(css_class="border-none shadow-none bg-secondary/10 p-4 rounded-xl"):
@@ -159,11 +167,11 @@ async def xkcd_help() -> ToolResult:
                     "Official xkcd metadata and rich in-chat comic rendering.",
                     css_class="text-lg font-bold mb-4",
                 )
-                with Text(css_class="grid grid-cols-2 gap-4"):
-                    with Text():
+                with Div(css_class="grid grid-cols-2 gap-4"):
+                    with Div():
                         Text("📡 Backend API", css_class="font-mono text-sm opacity-60")
                         Text("Port 10778", css_class="text-xl")
-                    with Text():
+                    with Div():
                         Text("🎨 Web UI", css_class="font-mono text-sm opacity-60")
                         Text("Port 10779", css_class="text-xl")
                 Text(

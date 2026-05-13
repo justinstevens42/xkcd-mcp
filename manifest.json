@@ -1,8 +1,8 @@
 {
   "manifest_version": "0.2",
   "name": "xkcd-mcp",
-  "version": "0.2.0",
-  "description": "FastMCP 3.1 xkcd server — official JSON API only; Prefab UI rich in-chat comics.",
+  "version": "0.3.0",
+  "description": "FastMCP 3.2 xkcd server — official JSON API + explainxkcd search; Prefab UI rich in-chat comics.",
   "author": {
     "name": "Sandra Schieder"
   },
@@ -31,6 +31,10 @@
     {
       "name": "xkcd_random",
       "description": "Fetch a random xkcd comic from the archive."
+    },
+    {
+      "name": "xkcd_search",
+      "description": "Search xkcd comics by topic using explainxkcd semantic indexing."
     },
     {
       "name": "xkcd_help",
