@@ -8,9 +8,22 @@ A minimal [FastMCP](https://github.com/jlowin/fastmcp) server that gives Claude 
 - `xkcd_get(number)` — fetch a specific comic by number
 - `xkcd_random` — fetch a random comic
 - `xkcd_search(query)` — search comics by topic
-- 'xkcd_summarize' - summarizes a conversation you had with Claude and gives a relevant comic
 
 Each result returns the title, image URL, alt text, and links to xkcd.com / explainxkcd.com.
+
+## Prompts
+
+- `xkcd_summarize` — summarize the current Claude conversation and find the most relevant xkcd comic
+
+## Using `xkcd_summarize`
+
+`xkcd_summarize` is a slash-command prompt, not a tool — Claude won't invoke it on its own. After a conversation you'd like to cap off with a comic, run:
+
+```
+/xkcd:xkcd_summarize
+```
+
+Claude will summarize the conversation so far, call `xkcd_search` with keywords from that summary, and reply with the best-matching comic (title, alt text, and links to xkcd.com / explainxkcd.com).
 
 ## Install
 
