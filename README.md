@@ -8,6 +8,7 @@ A minimal [FastMCP](https://github.com/jlowin/fastmcp) server that gives Claude 
 - `xkcd_get(number)` — fetch a specific comic by number
 - `xkcd_random` — fetch a random comic
 - `xkcd_search(query)` — search comics by topic
+- 'xkcd_summarize' - summarizes a conversation you had with Claude and gives a relevant comic
 
 Each result returns the title, image URL, alt text, and links to xkcd.com / explainxkcd.com.
 
