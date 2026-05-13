@@ -23,7 +23,7 @@ try:
         Text,
     )
 
-    HAS_PREFAB = os.environ.get("XKCD_PREFAB_APPS", "1") != "0"
+    HAS_PREFAB = os.environ.get("XKCD_PREFAB_APPS", "0") == "1"
 except ImportError:
     HAS_PREFAB = False
 
@@ -151,7 +151,7 @@ async def xkcd_help() -> ToolResult:
         "### Configuration\n"
         "- **Backend Port**: 10778 (API + MCP HTTP)\n"
         "- **Web UI Port**: 10779 (Vite Dashboard)\n"
-        "- **Prefab UI**: Enabled by default in compatible clients.\n\n"
+        "- **Prefab UI**: Disabled by default. Set `XKCD_PREFAB_APPS=1` to enable in compatible clients.\n\n"
         "### Links\n"
         "- [Official xkcd](https://xkcd.com)\n"
         "- [explainxkcd Wiki](https://www.explainxkcd.com)\n"
