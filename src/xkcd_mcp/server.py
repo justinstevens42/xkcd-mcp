@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 
 from fastmcp import FastMCP
+from fastmcp.exceptions import ToolError
 from fastmcp.tools import ToolResult
 
 from xkcd_mcp import xkcd_api
@@ -33,10 +34,12 @@ async def xkcd_latest() -> ToolResult:
     try:
         res = await xkcd_api.fetch_current()
         if not res.get("success"):
-            return ToolResult(content=f"Error: {res.get('error')}", is_error=True)
+            raise ToolError(f"Error: {res.get('error')}")
         return await _format_comic_result(res["comic"])
+    except ToolError:
+        raise
     except Exception as e:
-        return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
+        raise ToolError(f"Unexpected error: {str(e)}")
 
 
 @mcp.tool()
@@ -45,10 +48,12 @@ async def xkcd_get(comic_number: int) -> ToolResult:
     try:
         res = await xkcd_api.fetch_by_number(comic_number)
         if not res.get("success"):
-            return ToolResult(content=f"Error: {res.get('error')}", is_error=True)
+            raise ToolError(f"Error: {res.get('error')}")
         return await _format_comic_result(res["comic"])
+    except ToolError:
+        raise
     except Exception as e:
-        return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
+        raise ToolError(f"Unexpected error: {str(e)}")
 
 
 @mcp.tool()
@@ -61,7 +66,7 @@ async def xkcd_search(query: str) -> ToolResult:
         # 1. Search explainxkcd for comic numbers
         comic_nums = await xkcd_api.search_explain_xkcd(query)
         if not comic_nums:
-            return ToolResult(content=f"No xkcd comics found for topic: '{query}'", is_error=False)
+            return ToolResult(content=f"No xkcd comics found for topic: '{query}'")
 
         # 2. Fetch full metadata for each found comic
         comics = []
@@ -71,10 +76,7 @@ async def xkcd_search(query: str) -> ToolResult:
                 comics.append(res["comic"])
 
         if not comics:
-            return ToolResult(
-                content=f"Found references for '{query}', but could not fetch metadata.",
-                is_error=True,
-            )
+            raise ToolError(f"Found references for '{query}', but could not fetch metadata.")
 
         # 3. Format result (Text + Prefab)
         text_results = [f"Found {len(comics)} comics for '{query}':"]
@@ -107,8 +109,10 @@ async def xkcd_search(query: str) -> ToolResult:
             structured_content = PrefabApp(view=view, title=f"xkcd Search: {query}")
 
         return ToolResult(content=text_summary, structured_content=structured_content)
+    except ToolError:
+        raise
     except Exception as e:
-        return ToolResult(content=f"Search failed: {str(e)}", is_error=True)
+        raise ToolError(f"Search failed: {str(e)}")
 
 
 @mcp.tool()
@@ -117,10 +121,12 @@ async def xkcd_random() -> ToolResult:
     try:
         res = await xkcd_api.fetch_random()
         if not res.get("success"):
-            return ToolResult(content=f"Error: {res.get('error')}", is_error=True)
+            raise ToolError(f"Error: {res.get('error')}")
         return await _format_comic_result(res["comic"])
+    except ToolError:
+        raise
     except Exception as e:
-        return ToolResult(content=f"Unexpected error: {str(e)}", is_error=True)
+        raise ToolError(f"Unexpected error: {str(e)}")
 
 
 @mcp.tool()
