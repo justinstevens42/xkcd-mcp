@@ -1,4 +1,4 @@
-# xkcd-mcp
+# xkcd-mcp (modified to work with Claude Code)
 
 [![FastMCP Version](https://img.shields.io/badge/FastMCP-3.2-blue?style=flat-square&logo=python&logoColor=white)](https://github.com/sandraschi/fastmcp) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) [![Linted with Biome](https://img.shields.io/badge/Linted_with-Biome-60a5fa?style=flat-square&logo=biome&logoColor=white)](https://biomejs.dev/) [![Built with Just](https://img.shields.io/badge/Built_with-Just-000000?style=flat-square&logo=gnu-bash&logoColor=white)](https://github.com/casey/just)
 
@@ -18,7 +18,9 @@ You get a small **Vite** dashboard with a comic-panel **hero**: stick people, a 
 
 No scraping. No Explainxkcd body fetch. Were not here to parse HTML like its 2003.
 
-**Repo:** [github.com/sandraschi/xkcd-mcp](https://github.com/sandraschi/xkcd-mcp)
+**Original Repo:** [github.com/sandraschi/xkcd-mcp](https://github.com/sandraschi/xkcd-mcp)
+
+**Forked Repo:** [github.com/justinstevens42/xkcd-mcp](https://github.com/justinstevens42/xkcd-mcp)
 
 ---
 
@@ -59,9 +61,6 @@ Set-Location xkcd-mcp
 
 # Sync all dependencies (v0.2.0)
 uv sync
-
-# RECOMMENDED: FastMCP 3.2 Prefab UI support (rich in-chat comics)
-uv sync --extra apps
 ```
 
 ### MCP Configuration (Claude / Antigravity)
@@ -108,6 +107,13 @@ uv run xkcd-mcp --serve
 Or double-click `web_sota\start.bat` (launches the same script).
 
 **http://127.0.0.1:10779/** (same repo root as install)
+
+### Working with Claude Code (new)
+
+Find where the repository is loaded on your machine. Then if the directory is DIRECTORY, run the command:
+```
+claude mcp add --scope user xkcd -e XKCD_PREFAB_APPS=1 -- uv --directory DIRECTORY run xkcd-mcp
+```
 
 ### Fleet docs (LLM index)
 
