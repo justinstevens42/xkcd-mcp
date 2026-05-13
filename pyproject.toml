@@ -4,27 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xkcd-mcp"
-version = "0.3.0"
-description = "FastMCP 3.2 xkcd server — official JSON API only (current / by number / random), no HTML scraping."
+version = "0.4.0"
+description = "Minimal FastMCP server for xkcd comics (stdio, official JSON API)."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-authors = [{ name = "Sandra Schieder" }]
 dependencies = [
     "fastmcp>=3.2",
     "httpx>=0.27",
-    "prefab-ui>=0.14.0",
-    "starlette>=0.46",
-    "uvicorn[standard]>=0.32",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.8", "pre-commit>=4"]
-
-[project.urls]
-Homepage = "https://github.com/sandraschi/xkcd-mcp"
-Repository = "https://github.com/sandraschi/xkcd-mcp"
-Issues = "https://github.com/sandraschi/xkcd-mcp/issues"
+dev = ["pytest>=8", "pytest-asyncio>=0.24"]
 
 [project.scripts]
 xkcd-mcp = "xkcd_mcp.__main__:main"
@@ -35,15 +26,3 @@ where = ["src"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-
-[tool.ruff]
-line-length = 120
-target-version = "py312"
-
-[tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "S", "UP", "RUF"]
-ignore = ["S101", "B008"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
