@@ -19,7 +19,7 @@ You get a small **Vite** dashboard with a comic-panel **hero**: stick people, a 
 No scraping. No Explainxkcd body fetch. Were not here to parse HTML like its 2003.
 
 **Original Repo:** [github.com/sandraschi/xkcd-mcp](https://github.com/sandraschi/xkcd-mcp)
-**Forked Repo:** [[github.com/justinstevens42/xkcd-mcp](https://github.com/justinstevens42/xkcd-mcp)
+**Forked Repo:** [github.com/justinstevens42/xkcd-mcp](https://github.com/justinstevens42/xkcd-mcp)
 ---
 
 ## Technical details
