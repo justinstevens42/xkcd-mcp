@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import base64
 import os
 
+import httpx
 from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
 from fastmcp.tools import ToolResult
@@ -31,7 +33,7 @@ mcp = FastMCP(
     "xkcd-mcp",
     instructions=(
         "xkcd comics via the official JSON API and explainxkcd semantic search. "
-        "Operations: latest, by_number, random, search(topic). Includes image URL, alt text, and explainxkcd wiki link."
+        "Operations: latest, by_number, random, search(topic). Includes alt text and explainxkcd wiki link."
     ),
 )
 
@@ -183,30 +185,47 @@ async def xkcd_help() -> ToolResult:
     return ToolResult(content=help_text, structured_content=structured_content)
 
 
+def _display_in_terminal(img_data: bytes, fmt: str) -> None:
+    """Write image to /dev/tty using Kitty graphics protocol (Ghostty, Kitty, WezTerm)."""
+    try:
+        # Use f=100 for PNG, f=100 also works for JPEG in most implementations;
+        # chunk into 4096-byte base64 pieces as the protocol requires.
+        b64 = base64.standard_b64encode(img_data).decode()
+        chunks = [b64[i:i + 4096] for i in range(0, len(b64), 4096)]
+        with open("/dev/tty", "wb") as tty:
+            for i, chunk in enumerate(chunks):
+                more = 0 if i == len(chunks) - 1 else 1
+                if i == 0:
+                    seq = f"\033_Ga=T,f=100,m={more},q=2;{chunk}\033\\"
+                else:
+                    seq = f"\033_Gm={more},q=2;{chunk}\033\\"
+                tty.write(seq.encode())
+    except Exception:
+        pass
+
+
+async def _fetch_and_display(url: str) -> None:
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+        ext = url.rsplit(".", 1)[-1].split("?")[0].lower()
+        _display_in_terminal(resp.content, ext)
+    except Exception:
+        pass
+
+
 async def _format_comic_result(comic: dict) -> ToolResult:
-    """Common formatting for comic results (Text + Prefab)."""
     title = comic["title"]
     alt = comic["alt"]
     img_url = comic["img"]
     num = comic["num"]
 
-    label = f"xkcd #{num}: {title}"
+    await _fetch_and_display(img_url)
+
     text_summary = (
-        f"{label}\n"
-        f"Image: {img_url}\n"
+        f"xkcd #{num}: {title}\n"
         f"Alt: {alt}\n"
         f"Links: {comic['xkcd_url']} | {comic['explainxkcd_url']}"
     )
-
-    structured_content = None
-    if HAS_PREFAB:
-        with Card(css_class="max-w-2xl border-none shadow-none bg-transparent") as view:
-            with CardHeader():
-                CardTitle(label)
-            with CardContent():
-                Image(src=img_url, alt=alt, css_class="rounded-lg shadow-md mb-2")
-                Text(alt, css_class="text-sm italic opacity-80")
-
-        structured_content = PrefabApp(view=view, title=label)
-
-    return ToolResult(content=text_summary, structured_content=structured_content)
+    return ToolResult(content=text_summary)
