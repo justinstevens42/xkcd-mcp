@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import os
+import sys
 
 import httpx
 from fastmcp import FastMCP
@@ -33,27 +34,78 @@ def _terminal_supports_kitty_graphics() -> bool:
     return False
 
 
+def _png_dimensions(data: bytes) -> tuple[int, int] | None:
+    """Read (width, height) in pixels from a PNG IHDR chunk. Returns None if data isn't a PNG."""
+    if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n":
+        return None
+    width = int.from_bytes(data[16:20], "big")
+    height = int.from_bytes(data[20:24], "big")
+    return width, height
+
+
+# Render image at this column width via Kitty's `c=` param; height scales proportionally.
+_RENDER_COLS = 70
+# Newlines written after the image. With `a=T`, Kitty/Ghostty advance the cursor to the
+# bottom-right of the image, so the first \n drops below it and the rest are visual margin.
+_TRAILING_NEWLINES = 3
+# Skip rendering for images larger than this — terminals can choke on multi-MB payloads,
+# and a few xkcd comics (e.g. #1110 "Click and Drag") are absurdly large.
+_MAX_IMAGE_BYTES = 2 * 1024 * 1024
+
+
+def _debug(msg: str) -> None:
+    if os.environ.get("XKCD_MCP_DEBUG"):
+        print(f"xkcd-mcp: {msg}", file=sys.stderr)
+
+
 def _display_in_terminal(img_data: bytes) -> None:
-    """Write image to /dev/tty using Kitty graphics protocol (Ghostty, Kitty, WezTerm, Konsole)."""
+    """Write image to /dev/tty using Kitty graphics protocol (Ghostty, Kitty, WezTerm, Konsole).
+
+    Bails out (without reserving rows) if the image isn't a PNG or is too large, since
+    `f=100` only accepts PNG data and oversized payloads tend to fail silently terminal-side.
+    """
     if not _terminal_supports_kitty_graphics():
         return
+
+    if _png_dimensions(img_data) is None:
+        _debug("skipping non-PNG image; Kitty f=100 only supports PNG")
+        return
+    if len(img_data) > _MAX_IMAGE_BYTES:
+        _debug(f"skipping oversized image ({len(img_data)} bytes > {_MAX_IMAGE_BYTES})")
+        return
+
+    # Build the entire payload as one bytes object so we can emit it in a single write loop.
+    # If we streamed chunks one-by-one, Claude Code (or any concurrent writer to the same
+    # terminal) could inject bytes mid-APC-sequence, dropping us out of graphics mode and
+    # rendering the remaining base64 as literal text.
+    b64 = base64.standard_b64encode(img_data).decode()
+    chunks = [b64[i:i + 4096] for i in range(0, len(b64), 4096)]
+    parts = [b"\n"]
+    for i, chunk in enumerate(chunks):
+        more = 0 if i == len(chunks) - 1 else 1
+        if i == 0:
+            seq = f"\033_Ga=T,f=100,m={more},q=2,c={_RENDER_COLS};{chunk}\033\\"
+        else:
+            seq = f"\033_Gm={more},q=2;{chunk}\033\\"
+        parts.append(seq.encode())
+    parts.append(b"\n" * _TRAILING_NEWLINES)
+    payload = b"".join(parts)
+
+    fd = None
     try:
-        b64 = base64.standard_b64encode(img_data).decode()
-        chunks = [b64[i:i + 4096] for i in range(0, len(b64), 4096)]
-        with open("/dev/tty", "wb") as tty:
-            # Leading newline so the image doesn't overwrite the current line of agent output.
-            tty.write(b"\n")
-            for i, chunk in enumerate(chunks):
-                more = 0 if i == len(chunks) - 1 else 1
-                if i == 0:
-                    seq = f"\033_Ga=T,f=100,m={more},q=2;{chunk}\033\\"
-                else:
-                    seq = f"\033_Gm={more},q=2;{chunk}\033\\"
-                tty.write(seq.encode())
-            # Trailing newlines so subsequent agent output appears below, not on top of, the image.
-            tty.write(b"\n\n\n\n")
-    except Exception:
-        pass
+        fd = os.open("/dev/tty", os.O_WRONLY)
+        view = memoryview(payload)
+        while view:
+            n = os.write(fd, view)
+            view = view[n:]
+    except Exception as e:
+        _debug(f"tty write failed: {e!r}")
+    finally:
+        if fd is not None:
+            try:
+                os.close(fd)
+            except Exception:
+                pass
 
 
 async def _fetch_and_display(url: str) -> None:
