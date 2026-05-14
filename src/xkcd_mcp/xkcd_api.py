@@ -1,8 +1,7 @@
-"""xkcd.com official JSON endpoints only (no HTML scraping)."""
+"""xkcd official JSON API + explainxkcd MediaWiki search."""
 
 from __future__ import annotations
 
-import base64
 import random
 import re
 from typing import Any
@@ -11,100 +10,55 @@ import httpx
 
 _BASE = "https://xkcd.com"
 _EXPLAIN = "https://www.explainxkcd.com/wiki/api.php"
-_UA = "xkcd-mcp/0.1 (+https://github.com/sandraschi/xkcd-mcp)"
+_UA = "xkcd-mcp/0.4 (+https://github.com/justinstevens42/xkcd-mcp)"
+_TIMEOUT = httpx.Timeout(20.0)
 
 
-def _comic_dict(data: dict[str, Any]) -> dict[str, Any]:
+def _comic(data: dict[str, Any]) -> dict[str, Any]:
     num = int(data["num"])
     return {
         "num": num,
-        "month": data.get("month"),
-        "year": data.get("year"),
-        "day": data.get("day"),
         "title": data.get("title"),
-        "safe_title": data.get("safe_title"),
         "alt": data.get("alt"),
         "img": data.get("img"),
-        "transcript": data.get("transcript"),
-        "link": data.get("link") or "",
-        "news": data.get("news") or "",
+        "year": data.get("year"),
+        "month": data.get("month"),
+        "day": data.get("day"),
+        "transcript": data.get("transcript") or "",
         "xkcd_url": f"{_BASE}/{num}/",
         "explainxkcd_url": f"https://www.explainxkcd.com/wiki/index.php/{num}",
-        "json_source": f"{_BASE}/{num}/info.0.json",
     }
 
 
-async def fetch_current() -> dict[str, Any]:
-    async with httpx.AsyncClient(
-        timeout=httpx.Timeout(20.0),
-        headers={"User-Agent": _UA},
-    ) as client:
-        r = await client.get(f"{_BASE}/info.0.json")
-    r.raise_for_status()
-    data = r.json()
-    return {"success": True, "comic": _comic_dict(data)}
-
-
-async def fetch_by_number(num: int) -> dict[str, Any]:
-    if num < 1:
-        return {"success": False, "error": "comic_number must be >= 1"}
-    async with httpx.AsyncClient(
-        timeout=httpx.Timeout(20.0),
-        headers={"User-Agent": _UA},
-    ) as client:
-        r = await client.get(f"{_BASE}/{num}/info.0.json")
+async def _get_json(url: str) -> dict[str, Any] | None:
+    async with httpx.AsyncClient(timeout=_TIMEOUT, headers={"User-Agent": _UA}) as client:
+        r = await client.get(url)
     if r.status_code == 404:
-        return {"success": False, "error": f"No comic #{num} (404)."}
+        return None
     r.raise_for_status()
-    data = r.json()
-    return {"success": True, "comic": _comic_dict(data)}
+    return r.json()
+
+
+async def fetch_current() -> dict[str, Any]:
+    data = await _get_json(f"{_BASE}/info.0.json")
+    return _comic(data)
+
+
+async def fetch_by_number(num: int) -> dict[str, Any] | None:
+    if num < 1:
+        return None
+    data = await _get_json(f"{_BASE}/{num}/info.0.json")
+    return _comic(data) if data else None
 
 
 async def fetch_random() -> dict[str, Any]:
-    cur = await fetch_current()
-    if not cur.get("success"):
-        return cur
-    n = int(cur["comic"]["num"])
-    if n < 1:
-        return {"success": False, "error": "Could not determine latest comic number."}
-    pick = random.randint(1, n)
-    return await fetch_by_number(pick)
+    latest = await fetch_current()
+    pick = random.randint(1, latest["num"])
+    return await fetch_by_number(pick) or latest
 
 
-async def fetch_image_data_uri(url: str) -> str | None:
-    """Fetch image from URL and return as base64 data URI (capped at 512KB)."""
-    try:
-        async with httpx.AsyncClient(
-            timeout=httpx.Timeout(20.0),
-            headers={"User-Agent": _UA},
-        ) as client:
-            # Use stream=True and a byte limit to prevent huge payloads
-            async with client.stream("GET", url) as response:
-                response.raise_for_status()
-                content_type = response.headers.get("content-type", "image/png")
-                chunks = []
-                bytes_received = 0
-                max_bytes = 512 * 1024  # 512 KB SOTA cap
-
-                async for chunk in response.aiter_bytes():
-                    bytes_received += len(chunk)
-                    if bytes_received > max_bytes:
-                        # Too big; abort
-                        return None
-                    chunks.append(chunk)
-
-                image_data = b"".join(chunks)
-                b64_data = base64.b64encode(image_data).decode("utf-8")
-                return f"data:{content_type};base64,{b64_data}"
-    except Exception:
-        return None
-
-
-async def search_explain_xkcd(query: str, limit: int = 5) -> list[int]:
-    """
-    Search explainxkcd.com for a topic and return up to `limit` comic numbers.
-    Uses the MediaWiki API: action=query&list=search.
-    """
+async def search_explainxkcd(query: str, limit: int = 5) -> list[int]:
+    """Search explainxkcd via MediaWiki API; return comic numbers parsed from page titles."""
     params = {
         "action": "query",
         "list": "search",
@@ -113,28 +67,15 @@ async def search_explain_xkcd(query: str, limit: int = 5) -> list[int]:
         "srlimit": limit,
         "srwhat": "text",
     }
+    async with httpx.AsyncClient(timeout=_TIMEOUT, headers={"User-Agent": _UA}) as client:
+        r = await client.get(_EXPLAIN, params=params)
+    r.raise_for_status()
+    results = r.json().get("query", {}).get("search", [])
 
-    try:
-        async with httpx.AsyncClient(
-            timeout=httpx.Timeout(20.0),
-            headers={"User-Agent": _UA},
-        ) as client:
-            r = await client.get(_EXPLAIN, params=params)
-            r.raise_for_status()
-            data = r.json()
-
-        search_results = data.get("query", {}).get("search", [])
-        comic_nums = []
-
-        # Regex to find "NUM:" in titles like "1732: Earth Temperature Timeline"
-        num_pattern = re.compile(r"(\d+):")
-
-        for result in search_results:
-            title = result.get("title", "")
-            match = num_pattern.search(title)
-            if match:
-                comic_nums.append(int(match.group(1)))
-
-        return comic_nums
-    except Exception:
-        return []
+    pattern = re.compile(r"^(\d+):")
+    nums: list[int] = []
+    for item in results:
+        m = pattern.search(item.get("title", ""))
+        if m:
+            nums.append(int(m.group(1)))
+    return nums
