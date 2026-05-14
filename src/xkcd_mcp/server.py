@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import os
 
 import httpx
 from fastmcp import FastMCP
@@ -21,12 +22,27 @@ mcp = FastMCP(
 )
 
 
+def _terminal_supports_kitty_graphics() -> bool:
+    """Best-effort detection of terminals that implement the Kitty graphics protocol."""
+    if os.environ.get("KITTY_WINDOW_ID"):
+        return True
+    if os.environ.get("TERM_PROGRAM") in ("ghostty", "WezTerm"):
+        return True
+    if os.environ.get("KONSOLE_VERSION"):
+        return True
+    return False
+
+
 def _display_in_terminal(img_data: bytes) -> None:
-    """Write image to /dev/tty using Kitty graphics protocol (Ghostty, Kitty, WezTerm)."""
+    """Write image to /dev/tty using Kitty graphics protocol (Ghostty, Kitty, WezTerm, Konsole)."""
+    if not _terminal_supports_kitty_graphics():
+        return
     try:
         b64 = base64.standard_b64encode(img_data).decode()
         chunks = [b64[i:i + 4096] for i in range(0, len(b64), 4096)]
         with open("/dev/tty", "wb") as tty:
+            # Leading newline so the image doesn't overwrite the current line of agent output.
+            tty.write(b"\n")
             for i, chunk in enumerate(chunks):
                 more = 0 if i == len(chunks) - 1 else 1
                 if i == 0:
@@ -34,11 +50,15 @@ def _display_in_terminal(img_data: bytes) -> None:
                 else:
                     seq = f"\033_Gm={more},q=2;{chunk}\033\\"
                 tty.write(seq.encode())
+            # Trailing newlines so subsequent agent output appears below, not on top of, the image.
+            tty.write(b"\n\n\n\n")
     except Exception:
         pass
 
 
 async def _fetch_and_display(url: str) -> None:
+    if not _terminal_supports_kitty_graphics():
+        return
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.get(url)
