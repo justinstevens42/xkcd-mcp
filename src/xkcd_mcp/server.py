@@ -175,6 +175,7 @@ def xkcd_summarize() -> str:
     """Summarize the current Claude conversation and find the most relevant xkcd comic."""
     return (
         "Summarize the current Claude conversation, and find the most relevant XKCD "
-        "to the conversation. Use xkcd_search with keywords drawn from your summary, "
-        "then present the best match with its title, alt text, and links."
+        "to the conversation. Use xkcd_search with keywords drawn from your summary "
+        "to find candidates, then call xkcd_get(number) on the best match so its "
+        "image renders inline. Present the title, alt text, and links."
     )
